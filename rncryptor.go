@@ -24,7 +24,7 @@ type RNCryptor interface {
 	EncryptWithKeyAndIv(encKey, hmacKey, iv, data []byte) ([]byte, error)
 }
 
-type rncryptor struct {
+type DefaultRNCryptor struct {
 	pbkdfIterations int
 }
 
@@ -45,12 +45,12 @@ func init() {
 }
 
 func New() RNCryptor {
-	return &rncryptor{
+	return &DefaultRNCryptor{
 		pbkdfIterations: pbkdfIterations,
 	}
 }
 
-func (r *rncryptor) SetPBKDFInterations(v int) {
+func (r *DefaultRNCryptor) SetPBKDFInterations(v int) {
 	r.pbkdfIterations = v
 }
 
@@ -58,7 +58,7 @@ func Decrypt(password string, data []byte) ([]byte, error) {
 	return r.Decrypt(password, data)
 }
 
-func (r *rncryptor) Decrypt(password string, data []byte) ([]byte, error) {
+func (r *DefaultRNCryptor) Decrypt(password string, data []byte) ([]byte, error) {
 	version := data[0]
 
 	if version != supportedVersion {
@@ -111,7 +111,7 @@ func DecryptWithKey(decKey, hmacKey, data []byte) ([]byte, error) {
 	return r.DecryptWithKey(decKey, hmacKey, data)
 }
 
-func (r *rncryptor) DecryptWithKey(decKey, hmacKey, data []byte) ([]byte, error) {
+func (r *DefaultRNCryptor) DecryptWithKey(decKey, hmacKey, data []byte) ([]byte, error) {
 	version := data[0]
 
 	if version != supportedVersion {
@@ -160,7 +160,7 @@ func Encrypt(password string, data []byte) ([]byte, error) {
 	return r.Encrypt(password, data)
 }
 
-func (r *rncryptor) Encrypt(password string, data []byte) ([]byte, error) {
+func (r *DefaultRNCryptor) Encrypt(password string, data []byte) ([]byte, error) {
 	encSalt, encSaltErr := RandBytes(saltLength)
 	if encSaltErr != nil {
 		return nil, encSaltErr
@@ -187,7 +187,7 @@ func EncryptWithOptions(password string, data, encSalt, hmacSalt, iv []byte) ([]
 	return r.EncryptWithOptions(password, data, encSalt, hmacSalt, iv)
 }
 
-func (r *rncryptor) EncryptWithOptions(password string, data, encSalt, hmacSalt, iv []byte) ([]byte, error) {
+func (r *DefaultRNCryptor) EncryptWithOptions(password string, data, encSalt, hmacSalt, iv []byte) ([]byte, error) {
 	if len(password) < 1 {
 		return nil, fmt.Errorf("password cannot be empty")
 	}
@@ -219,7 +219,7 @@ func EncryptWithKey(encKey, hmacKey, data []byte) ([]byte, error) {
 	return r.EncryptWithKey(encKey, hmacKey, data)
 }
 
-func (r *rncryptor) EncryptWithKey(encKey, hmacKey, data []byte) ([]byte, error) {
+func (r *DefaultRNCryptor) EncryptWithKey(encKey, hmacKey, data []byte) ([]byte, error) {
 	iv, err := RandBytes(blockSize)
 	if err != nil {
 		return nil, err
@@ -232,7 +232,7 @@ func EncryptWithKeyAndIv(encKey, hmacKey, iv, data []byte) ([]byte, error) {
 	return r.EncryptWithKeyAndIv(encKey, hmacKey, iv, data)
 }
 
-func (r *rncryptor) EncryptWithKeyAndIv(encKey, hmacKey, iv, data []byte) ([]byte, error) {
+func (r *DefaultRNCryptor) EncryptWithKeyAndIv(encKey, hmacKey, iv, data []byte) ([]byte, error) {
 
 	version := supportedVersion
 	options := byte(0)
@@ -252,7 +252,7 @@ func (r *rncryptor) EncryptWithKeyAndIv(encKey, hmacKey, iv, data []byte) ([]byt
 	return msg, nil
 }
 
-func (r *rncryptor) encryptAndHmac(header, data, iv, encKey, hmacKey []byte) ([]byte, []byte, error) {
+func (r *DefaultRNCryptor) encryptAndHmac(header, data, iv, encKey, hmacKey []byte) ([]byte, []byte, error) {
 	cipherBlock, err := aes.NewCipher(encKey)
 	if err != nil {
 		return nil, nil, err
